@@ -1,0 +1,20 @@
+aaaaaaaa
+login_falhou
+LOGIN FALHOU
+
+acesso_negado
+acesso_negado
+acesso_negado
+acesso_negado
+acesso_negado
+acesso_negado
+erro_servidor
+erro_servidor
+login_falhou
+LOGIN FALHOU
+erro_servidor
+erro_servidor
+erro_servidor
+erro_servidor
+erro_servidor
+erro_servidor
