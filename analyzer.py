@@ -1,5 +1,7 @@
 
 def arrumando_eventos_em_arquivos(caminho_do_arquivo):
+    '''Organiza os eventos de um arquivo (parametro), o nome do arquivo é inserido na main. Retorna um dicionario com os eventos e suas quantidades de ocorrencia ou um dicionario vazio se assim for o arquivo, se o arquivo nao existir retorna None.'''
+    
     try: #tente executar o seguinte código...
         with open(caminho_do_arquivo,"r") as eventos_do_arquivo: #Abre o arquivo e da a permissao de ler(r)
         #O arquivo vai precisar ter um apelido. (...as apelido:)
@@ -21,7 +23,7 @@ def arrumando_eventos_em_arquivos(caminho_do_arquivo):
         return None
 
 def classificacao_de_gravidade(relatorio_de_eventos):
-
+    '''Recebe o dicionario organizado e define uma gravidade ou unknown aos eventos. Retorna um dicionario com nome do envento, qunatas vezes aconteceu e sua gravidade.'''
     dicionario_gravidade = { #base.
         "login_failed": "low",
         "access_denied": "medium",
@@ -41,6 +43,28 @@ def classificacao_de_gravidade(relatorio_de_eventos):
         }
     return evento_e_gravidade
 
+def reajuste_de_gravidade(gravidade_dos_eventos): 
+
+    gravidade_por_quantidade = {}
+
+    for evento, info in gravidade_dos_eventos.items():
+        qtd = info["quantidade"]
+        grv = info["gravidade"]
+        if qtd >= 20 and grv == "low":
+            gravidade_final = "medium"
+            if qtd >= 70 and grv == "low":
+                gravidade_final = "high"
+        elif qtd >= 10 and grv == "medium":
+            gravidade_final = "high"
+        else:
+            gravidade_final = grv
+        gravidade_por_quantidade[evento] = {
+            "quantidade": qtd,
+            "gravidade": grv,
+            "gravidade_final": gravidade_final
+
+        }
+    return gravidade_por_quantidade
 
 if __name__ =="__main__":
     
@@ -50,19 +74,21 @@ if __name__ =="__main__":
     if relatorio_de_eventos is None:
         print('Arquivo não encontrado, por favor verifique o nome do arquivo.')
     elif relatorio_de_eventos == {}:
-         print('O arquivo está vazio')
+         print('O arquivo está vazio.')
     else:
         # Só classifica se o relatório existir e não estiver vazio
-        gravidade_dos_eventos = classificacao_de_gravidade(relatorio_de_eventos)
-
+        gravidade1_dos_eventos = classificacao_de_gravidade(relatorio_de_eventos)
+        gravidade2_dos_eventos = reajuste_de_gravidade(gravidade1_dos_eventos)
+    
         # deixando bonito
-        print(f"{'EVENTO':<20} | {'QTD':<5} | {'GRAVIDADE'}") # {evento:<n} reserva de espaços.
-        print("-" * 40) # repetir um caractere
+        print(f"{'EVENTO':<20} | {'QTD':<5} | {'GRAVIDADE':<5} | {'FINAL'}") # {evento:<n} reserva de espaços.
+        print("-" * 50) # repetir um caractere
 
-        for evento, info in gravidade_dos_eventos.items(): # evento-> Recebe a chave principal (o nome do erro). info-> Recebe o dicionário interno completo (quantidade e gravidade).
+        for evento, info in gravidade2_dos_eventos.items(): # evento-> Recebe a chave principal (o nome do erro). info-> Recebe o dicionário interno completo (quantidade e gravidade).
             qtd = info["quantidade"]
             grv = info["gravidade"]
-            print(f"{evento:<20} | {qtd:<5} | {grv.upper()}")
+            grvf = info["gravidade_final"]
+            print(f"{evento:<20} | {qtd:<5} | {grv:<9} | {grvf.upper()}")
 
 
         
