@@ -35,14 +35,20 @@ def classificacao_de_gravidade(relatorio_de_eventos):
 
 # Loop responsavel por atribuir a devida seriedade e junta-las os eventos do relatorio_de_eventos em um NOVO dicionario "eventos_e_gravidade"
     
-    for evento, quantidade in relatorio_de_eventos.items(): # evento vem da chave. quantidade vem do valor.
-        gravidade = dicionario_gravidade.get(evento, "unknown") # .get(), Se evento existir em dicionario_gravidade -> pega o valor. Se não existir -> "unknown"
-        
-        evento_e_gravidade[evento] = { # “Use o valor de evento como chave no dicionário evento_e_gravidade.”
+    for evento_base, gravidade in dicionario_gravidade.items(): # evento vem da chave. quantidade vem do valor.
+        quantidade = relatorio_de_eventos.get(evento_base, 0) 
+        evento_e_gravidade[evento_base] = { # “Use o valor de evento como chave no dicionário evento_e_gravidade.”
             "quantidade": quantidade,
             "gravidade": gravidade
         }
-    return evento_e_gravidade
+    for evento, quantidade in relatorio_de_eventos.items():
+        gravidade = dicionario_gravidade.get(evento,"unknonw")
+        evento_e_gravidade[evento] = {
+            "quantidade": quantidade,
+            "gravidade": gravidade
+        }
+
+    return evento_e_gravidade # AQUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 
 def reajuste_de_gravidade(gravidade_dos_eventos): 
 
@@ -54,7 +60,7 @@ def reajuste_de_gravidade(gravidade_dos_eventos):
     }
 
     nivel_para_gravidade = { # Dicionario numero para string. "Tabela de tradução".
-        0: "unknown",
+        0: "unknonw",
         1: "low",
         2: "medium",
         3: "high"
@@ -76,9 +82,12 @@ def reajuste_de_gravidade(gravidade_dos_eventos):
             
         elif nivel_atual == 1 and qtd >= 20:
             nivel_atual = 2
-            
+         
         elif nivel_atual == 2 and  qtd >= 10:
             nivel_atual = 3
+
+        else:
+            nivel_atual = 0
             
         # Converte numero para string.
         gravidade_final = nivel_para_gravidade.get(nivel_atual)
@@ -92,14 +101,14 @@ def reajuste_de_gravidade(gravidade_dos_eventos):
     return gravidade_por_quantidade
 
 if __name__ =="__main__":
-    
+    #nome_arquivo = input("Digite o nome do arquivo que deseja verificar: ")
     relatorio_de_eventos = arrumando_eventos_em_arquivos("eventos.txt") #aqui "relatorio_de_eventos" é resopnsavel por receber o valor qué retornado na funçõa, nesse caso, o diconario.
     #passar o nome do arqivo que deseja ler ^.
     
     if relatorio_de_eventos is None:
-        print('Arquivo não encontrado, por favor verifique o nome do arquivo.')
+        print('\nArquivo não encontrado, por favor verifique o nome do arquivo.')
     elif relatorio_de_eventos == {}:
-         print('O arquivo está vazio.')
+         print('\nO arquivo está vazio.')
     else:
         # Só classifica se o relatório existir e não estiver vazio
         gravidade1_dos_eventos = classificacao_de_gravidade(relatorio_de_eventos)
