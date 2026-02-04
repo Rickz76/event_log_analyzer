@@ -23,7 +23,7 @@ def arrumando_eventos_em_arquivos(caminho_do_arquivo):
         return None
 
 def classificacao_de_gravidade(relatorio_de_eventos):
-    '''Recebe o dicionario organizado e define uma gravidade ou unknown aos eventos. Retorna um dicionario com nome do envento, qunatas vezes aconteceu e sua gravidade.'''
+    '''Recebe o dicionario organizado e define uma gravidade ou unknown aos eventos. Retorna um dicionario com nome do envento, quantas vezes aconteceu e sua gravidade. Define eventos base que vão aparecerno relatorio final independdente de terem ocorrido ou não.'''
     
     dicionario_gravidade = { #base.
         "login_failed": "low",
@@ -42,7 +42,7 @@ def classificacao_de_gravidade(relatorio_de_eventos):
             "gravidade": gravidade
         }
     for evento, quantidade in relatorio_de_eventos.items():
-        gravidade = dicionario_gravidade.get(evento,"unknonw")
+        gravidade = dicionario_gravidade.get(evento,"unknown")
         evento_e_gravidade[evento] = {
             "quantidade": quantidade,
             "gravidade": gravidade
@@ -50,17 +50,10 @@ def classificacao_de_gravidade(relatorio_de_eventos):
 
     return evento_e_gravidade # AQUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 
-def reajuste_de_gravidade(gravidade_dos_eventos): 
-
-    nivel_gravidade = { #Dicionario string pra numero. "Tabela de tradução".
-        "unknown":0,
-        "low": 1,
-        "medium": 2,
-        "high": 3
-    }
+def reajuste_de_gravidade(gravidade1_dos_eventos): 
 
     nivel_para_gravidade = { # Dicionario numero para string. "Tabela de tradução".
-        0: "unknonw",
+        0: "none",
         1: "low",
         2: "medium",
         3: "high"
@@ -69,36 +62,61 @@ def reajuste_de_gravidade(gravidade_dos_eventos):
 
     gravidade_por_quantidade = {}
 
-    for evento, info in gravidade_dos_eventos.items():
+    for evento, info in gravidade1_dos_eventos.items():
         qtd = info["quantidade"]
-        grv = info["gravidade"]
-
-        # converter gravidade (string) para número
-        nivel_atual = nivel_gravidade.get(grv, 0) # "Se essa chave existir, me dá o valor. Se não existir, considera nível 0.”
         
-        # Gravidade por quantidade e relevancia em numero, não mais em string.
-        if nivel_atual == 1 and qtd >= 70:
-            nivel_atual = 3
-            
-        elif nivel_atual == 1 and qtd >= 20:
-            nivel_atual = 2
-         
-        elif nivel_atual == 2 and  qtd >= 10:
-            nivel_atual = 3
 
-        else:
+        
+        
+        # Gravidade por quantidade e relevancia em numero.
+        if qtd == 0: 
             nivel_atual = 0
-            
-        # Converte numero para string.
-        gravidade_final = nivel_para_gravidade.get(nivel_atual)
 
+        elif qtd >= 31:
+            nivel_atual = 3
+        
+        elif 11 <= qtd <= 30:
+            nivel_atual = 2
+
+        elif 1 <= qtd <= 10:
+            nivel_atual = 1
+           
         gravidade_por_quantidade[evento] = {
             "quantidade": qtd,
-            "gravidade": grv,
-            "gravidade_final": gravidade_final
+            "gravidade": info["gravidade"],
+            "gravidade_calculada": nivel_para_gravidade[nivel_atual]
 
         }
     return gravidade_por_quantidade
+
+
+def relevancia_da_quantidade(gravidade2_dos_eventos):
+    """
+    Decide a gravidade final: usa a maior entre a base e a calculada por quantidade.
+    """
+    niveis = {"unknown": 0,
+     "none": 0,
+      "low": 1,
+      "medium": 2,
+       "high": 3}
+    resultado_final = {}
+
+    for evento, dados in gravidade2_dos_eventos.items():
+        v_base = niveis.get(dados["gravidade"], 0)
+        v_calc = niveis.get(dados["gravidade_calculada"], 0)
+        
+        # Escolhe o maior nível entre o pré-_definido e o baseado em volume
+        maior_nivel = (v_base if v_base > v_calc else v_calc) if dados["quantidade"] > 0 else 0
+        
+        # Traduz de volta para string
+        traducao = {0: "NONE", 1: "LOW", 2: "MEDIUM", 3: "HIGH"}
+        
+        resultado_final[evento] = {
+            "quantidade": dados["quantidade"],
+            "gravidade_base": dados["gravidade"],
+            "gravidade_final": traducao[maior_nivel]
+        }
+    return resultado_final
 
 if __name__ =="__main__":
     #nome_arquivo = input("Digite o nome do arquivo que deseja verificar: ")
@@ -111,16 +129,17 @@ if __name__ =="__main__":
          print('\nO arquivo está vazio.')
     else:
         # Só classifica se o relatório existir e não estiver vazio
-        gravidade1_dos_eventos = classificacao_de_gravidade(relatorio_de_eventos)
-        gravidade2_dos_eventos = reajuste_de_gravidade(gravidade1_dos_eventos)
+        g1 = classificacao_de_gravidade(relatorio_de_eventos)
+        g2 = reajuste_de_gravidade(g1)
+        g3 = relevancia_da_quantidade(g2)
     
         # deixando bonito
         print(f"{'EVENTO':<20} | {'QTD':<5} | {'GRAVIDADE':<5} | {'FINAL'}") # {evento:<n} reserva de espaços.
         print("-" * 50) # repetir um caractere
 
-        for evento, info in gravidade2_dos_eventos.items(): # evento-> Recebe a chave principal (o nome do erro). info-> Recebe o dicionário interno completo (quantidade e gravidade).
+        for evento, info in g3.items(): # evento-> Recebe a chave principal (o nome do erro). info-> Recebe o dicionário interno completo (quantidade e gravidade).
             qtd = info["quantidade"]
-            grv = info["gravidade"]
+            grv = info["gravidade_base"]
             grvf = info["gravidade_final"]
             print(f"{evento:<20} | {qtd:<5} | {grv:<9} | {grvf.upper()}")
 
